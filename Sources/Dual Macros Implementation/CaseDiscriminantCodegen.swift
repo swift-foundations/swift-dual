@@ -10,6 +10,24 @@ func generateCaseDiscriminant(
     let inlinableAttr = isPublic ? "@inlinable\n        " : ""
     let caseCount = caseNames.count
 
+    guard !caseNames.isEmpty else {
+        // Empty enum — uninhabited Case type with count 0
+        return """
+            \(accessModifier)enum Case: Finite_Primitives.Finite.Enumerable, Sendable {
+
+                    \(inlinableAttr)\(accessModifier)static var count: Cardinal_Primitives.Cardinal { Cardinal_Primitives.Cardinal(0) }
+
+                    \(inlinableAttr)\(accessModifier)var ordinal: Ordinal_Primitives.Ordinal {
+                        switch self {}
+                    }
+
+                    \(inlinableAttr)\(accessModifier)init(__unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
+                        fatalError("Case is uninhabited")
+                    }
+                }
+        """
+    }
+
     let caseCases = caseNames.map { "case \($0)" }.joined(separator: "\n            ")
 
     let caseOrdinalCases = caseNames.enumerated().map { index, name in

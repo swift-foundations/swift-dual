@@ -52,15 +52,6 @@ func expandStruct(
     context: some MacroExpansionContext
 ) -> [DeclSyntax] {
     let properties = extractAllStoredProperties(from: structDecl)
-
-    guard !properties.isEmpty else {
-        context.diagnose(Diagnostic(
-            node: node,
-            message: DualDiagnostic.noStoredProperties
-        ))
-        return []
-    }
-
     let structName = structDecl.name.trimmedDescription
     let isPublic = isPublicDecl(structDecl)
     let inlinable = isPublic && canInline(from: structDecl.memberBlock)

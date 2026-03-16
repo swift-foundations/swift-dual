@@ -46,6 +46,10 @@ struct WithClosures: Sendable {
     var total: Int
 }
 
+/// Empty struct — dual is an uninhabited enum (unit → void).
+@Dual
+struct Empty: Sendable {}
+
 // MARK: - Enum Fixtures
 
 @Dual
