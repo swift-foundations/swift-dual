@@ -5,31 +5,26 @@ import SwiftDiagnostics
 
 // MARK: - DualMacro
 
-public struct DualMacro {}
+public struct DualMacro {
+    enum Diagnostic: String, DiagnosticMessage {
+        case requiresStructOrEnum
+        case noEnumCases
 
-// MARK: - Diagnostics
-
-enum DualDiagnostic: String, DiagnosticMessage {
-    case requiresStructOrEnum
-    case noStoredProperties
-    case noEnumCases
-
-    var message: String {
-        switch self {
-        case .requiresStructOrEnum:
-            return "@Dual can only be applied to structs or enums"
-        case .noStoredProperties:
-            return "@Dual requires a struct containing at least one stored property"
-        case .noEnumCases:
-            return "@Dual requires an enum containing at least one case"
+        var message: String {
+            switch self {
+            case .requiresStructOrEnum:
+                "@Dual can only be applied to structs or enums"
+            case .noEnumCases:
+                "@Dual requires an enum containing at least one case"
+            }
         }
-    }
 
-    var diagnosticID: MessageID {
-        MessageID(domain: "DualMacro", id: rawValue)
-    }
+        var diagnosticID: MessageID {
+            MessageID(domain: "DualMacro", id: rawValue)
+        }
 
-    var severity: DiagnosticSeverity { .error }
+        var severity: DiagnosticSeverity { .error }
+    }
 }
 
 // MARK: - MemberMacro
@@ -42,16 +37,16 @@ extension DualMacro: MemberMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         if let enumDecl = declaration.as(EnumDeclSyntax.self) {
-            return expandEnum(enumDecl: enumDecl, node: node, context: context)
+            return expand(enumDecl, node: node, context: context)
         }
 
         if let structDecl = declaration.as(StructDeclSyntax.self) {
-            return expandStruct(structDecl: structDecl, node: node, context: context)
+            return expand(structDecl, node: node, context: context)
         }
 
-        context.diagnose(Diagnostic(
+        context.diagnose(SwiftDiagnostics.Diagnostic(
             node: node,
-            message: DualDiagnostic.requiresStructOrEnum
+            message: Diagnostic.requiresStructOrEnum
         ))
         return []
     }
@@ -66,10 +61,7 @@ extension DualMacro: MemberAttributeMacro {
         providingAttributesFor member: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [AttributeSyntax] {
-        // No attributes for enum members
-        if declaration.is(EnumDeclSyntax.self) {
-            return []
-        }
+        if declaration.is(EnumDeclSyntax.self) { return [] }
 
         guard let varDecl = member.as(VariableDeclSyntax.self),
               let binding = varDecl.bindings.first,
@@ -79,20 +71,15 @@ extension DualMacro: MemberAttributeMacro {
             return []
         }
 
-        var attributes: [AttributeSyntax] = []
+        guard let structDecl = declaration.as(StructDeclSyntax.self) else { return [] }
 
-        // For public structs, add @usableFromInline to non-public stored properties
-        // so that @inlinable generated code can reference them.
-        // Skip for properties with restricted access (package/private/fileprivate).
-        if let structDecl = declaration.as(StructDeclSyntax.self) {
-            let isPublicStruct = structDecl.modifiers.contains { $0.name.tokenKind == .keyword(.public) }
-            let isPublicMember = varDecl.modifiers.contains { $0.name.tokenKind == .keyword(.public) }
-            if isPublicStruct && !isPublicMember && !hasRestrictedAccess(varDecl.modifiers) {
-                attributes.append(AttributeSyntax(stringLiteral: "@usableFromInline"))
-            }
+        let isPublicStruct = structDecl.modifiers.contains { $0.name.tokenKind == .keyword(.public) }
+        let isPublicMember = varDecl.modifiers.contains { $0.name.tokenKind == .keyword(.public) }
+
+        if isPublicStruct && !isPublicMember && !hasRestrictedAccess(varDecl.modifiers) {
+            return [AttributeSyntax(stringLiteral: "@usableFromInline")]
         }
-
-        return attributes
+        return []
     }
 }
 
@@ -106,13 +93,7 @@ extension DualMacro: ExtensionMacro {
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
     ) throws -> [ExtensionDeclSyntax] {
-        // For enums, conform the source enum to __OpticPrismAccessible
-        // For structs, the conformance goes directly in the enum Dual declaration's inheritance clause
-        if declaration.is(EnumDeclSyntax.self) {
-            let prismExt = try ExtensionDeclSyntax("extension \(type.trimmed): Optic_Primitives.__OpticPrismAccessible {}")
-            return [prismExt]
-        }
-
-        return []
+        guard declaration.is(EnumDeclSyntax.self) else { return [] }
+        return [try ExtensionDeclSyntax("extension \(type.trimmed): Optic_Primitives.__OpticPrismAccessible {}")]
     }
 }

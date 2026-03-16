@@ -3,61 +3,47 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftDiagnostics
 
-// MARK: - Enum Case Extraction
+// MARK: - Case Extraction
 
-struct EnumCase: Sendable {
-    /// The case name as it appears in source, including backtick escaping if present.
+struct Case: Sendable {
     let name: String
-    let parameters: [EnumCaseParameter]
+    let parameters: [Parameter]
+
+    struct Parameter: Sendable {
+        let label: String?
+        let type: String
+    }
 }
 
-struct EnumCaseParameter: Sendable {
-    /// The label as it appears in source, including backtick escaping if present.
-    let label: String?
-    let type: String
-}
+func extractCases(from enumDecl: EnumDeclSyntax) -> [Case] {
+    enumDecl.memberBlock.members.flatMap { member -> [Case] in
+        guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return [] }
 
-func extractEnumCases(from enumDecl: EnumDeclSyntax) -> [EnumCase] {
-    var cases: [EnumCase] = []
-
-    for member in enumDecl.memberBlock.members {
-        guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { continue }
-
-        for element in caseDecl.elements {
+        return caseDecl.elements.map { element in
             // .text preserves backtick escaping — use directly, do NOT re-escape.
-            let name = element.name.text
-            var parameters: [EnumCaseParameter] = []
-
-            if let parameterClause = element.parameterClause {
-                for param in parameterClause.parameters {
-                    let label = param.firstName?.text
-                    parameters.append(EnumCaseParameter(
-                        label: label,
-                        type: param.type.trimmedDescription
-                    ))
-                }
-            }
-
-            cases.append(EnumCase(name: name, parameters: parameters))
+            Case(
+                name: element.name.text,
+                parameters: element.parameterClause?.parameters.map { param in
+                    Case.Parameter(label: param.firstName?.text, type: param.type.trimmedDescription)
+                } ?? []
+            )
         }
     }
-
-    return cases
 }
 
 // MARK: - Enum → Dual<R> Struct + Infrastructure Expansion
 
-func expandEnum(
-    enumDecl: EnumDeclSyntax,
+func expand(
+    _ enumDecl: EnumDeclSyntax,
     node: AttributeSyntax,
     context: some MacroExpansionContext
 ) -> [DeclSyntax] {
-    let cases = extractEnumCases(from: enumDecl)
+    let cases = extractCases(from: enumDecl)
 
     guard !cases.isEmpty else {
         context.diagnose(Diagnostic(
             node: node,
-            message: DualDiagnostic.noEnumCases
+            message: DualMacro.Diagnostic.noEnumCases
         ))
         return []
     }
@@ -65,51 +51,48 @@ func expandEnum(
     let enumName = enumDecl.name.trimmedDescription
     let isPublic = isPublicDecl(enumDecl)
     let sendable = isSendable(enumDecl)
-    let accessModifier = isPublic ? "public " : ""
-    let inlinableAttr = isPublic ? "@inlinable\n    " : ""
+    let access = isPublic ? "public " : ""
+    let inline = isPublic ? "@inlinable\n    " : ""
+    let sendableAnnotation = sendable ? "@Sendable " : ""
 
     var members: [DeclSyntax] = []
 
     // 1. Dual<R> struct (Scott encoding)
-    let sendableAnnotation = sendable ? "@Sendable " : ""
-
-    var dualProperties: [String] = []
-    var initParams: [String] = []
-
-    for enumCase in cases {
-        // case names from .text already include backtick escaping
-        let name = enumCase.name
-
-        if enumCase.parameters.isEmpty {
-            dualProperties.append("\(accessModifier)var \(name): \(sendableAnnotation)() -> R")
-            initParams.append("\(name): @escaping \(sendableAnnotation)() -> R")
-        } else if enumCase.parameters.count == 1 {
-            let param = enumCase.parameters[0]
-            let paramPart = param.label != nil ? "_ \(param.label!): " : "_ arg: "
-            dualProperties.append("\(accessModifier)var \(name): \(sendableAnnotation)(\(paramPart)\(param.type)) -> R")
-            initParams.append("\(name): @escaping \(sendableAnnotation)(\(paramPart)\(param.type)) -> R")
+    let dualProperties = cases.map { c in
+        let closureParams: String
+        if c.parameters.isEmpty {
+            closureParams = "()"
         } else {
-            let paramList = enumCase.parameters.map { param in
-                let label = param.label ?? "_"
-                return "_ \(label): \(param.type)"
-            }.joined(separator: ", ")
-            dualProperties.append("\(accessModifier)var \(name): \(sendableAnnotation)(\(paramList)) -> R")
-            initParams.append("\(name): @escaping \(sendableAnnotation)(\(paramList)) -> R")
+            closureParams = "(" + c.parameters.map { p in
+                let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
+                return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
+            }.joined(separator: ", ") + ")"
         }
-    }
+        return "\(access)var \(c.name): \(sendableAnnotation)\(closureParams) -> R"
+    }.joined(separator: "\n        ")
 
-    let dualPropertiesStr = dualProperties.joined(separator: "\n        ")
-    let initParamsStr = initParams.joined(separator: ",\n            ")
-    let initAssignments = cases.map { c in
-        "self.\(c.name) = \(c.name)"
-    }.joined(separator: "\n            ")
+    let initParams = cases.map { c in
+        let closureParams: String
+        if c.parameters.isEmpty {
+            closureParams = "()"
+        } else {
+            closureParams = "(" + c.parameters.map { p in
+                let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
+                return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
+            }.joined(separator: ", ") + ")"
+        }
+        return "\(c.name): @escaping \(sendableAnnotation)\(closureParams) -> R"
+    }.joined(separator: ",\n            ")
+
+    let initAssignments = cases.map { "self.\($0.name) = \($0.name)" }
+        .joined(separator: "\n            ")
 
     let dualStruct: DeclSyntax = """
-        \(raw: accessModifier)struct Dual<R> {
-            \(raw: dualPropertiesStr)
+        \(raw: access)struct Dual<R> {
+            \(raw: dualProperties)
 
-            \(raw: inlinableAttr)\(raw: accessModifier)init(
-                \(raw: initParamsStr)
+            \(raw: inline)\(raw: access)init(
+                \(raw: initParams)
             ) {
                 \(raw: initAssignments)
             }
@@ -118,29 +101,26 @@ func expandEnum(
     members.append(dualStruct)
 
     // 2. match function
-    let matchCases = cases.map { enumCase in
-        let name = enumCase.name
-
-        if enumCase.parameters.isEmpty {
-            return "case .\(name): dual.\(name)()"
-        } else if enumCase.parameters.count == 1 {
-            let param = enumCase.parameters[0]
-            let binding = param.label != nil ? "let \(param.label!)" : "let v"
-            let arg = param.label ?? "v"
-            return "case .\(name)(\(binding)): dual.\(name)(\(arg))"
+    let matchCases = cases.map { c in
+        if c.parameters.isEmpty {
+            return "case .\(c.name): dual.\(c.name)()"
+        } else if c.parameters.count == 1 {
+            let p = c.parameters[0]
+            let binding = p.label != nil ? "let \(p.label!)" : "let v"
+            return "case .\(c.name)(\(binding)): dual.\(c.name)(\(p.label ?? "v"))"
         } else {
-            let bindings = enumCase.parameters.enumerated().map { i, param in
-                param.label != nil ? "let \(param.label!)" : "let v\(i)"
+            let bindings = c.parameters.enumerated().map { i, p in
+                p.label != nil ? "let \(p.label!)" : "let v\(i)"
             }.joined(separator: ", ")
-            let args = enumCase.parameters.enumerated().map { i, param in
-                param.label ?? "v\(i)"
+            let args = c.parameters.enumerated().map { i, p in
+                p.label ?? "v\(i)"
             }.joined(separator: ", ")
-            return "case .\(name)(\(bindings)): dual.\(name)(\(args))"
+            return "case .\(c.name)(\(bindings)): dual.\(c.name)(\(args))"
         }
     }.joined(separator: "\n            ")
 
     let matchFunc: DeclSyntax = """
-        \(raw: inlinableAttr)\(raw: accessModifier)func match<R>(_ dual: Dual<R>) -> R {
+        \(raw: inline)\(raw: access)func match<R>(_ dual: Dual<R>) -> R {
             switch self {
             \(raw: matchCases)
             }
@@ -148,18 +128,18 @@ func expandEnum(
         """
     members.append(matchFunc)
 
-    // 3. Enum infrastructure (extraction, Case discriminant, Prisms, accessors)
+    // 3. Enum infrastructure
 
-    // Extraction properties — names already escaped from AST
-    for enumCase in cases {
+    // Extraction properties
+    for c in cases {
         members.append(generateExtractionProperty(
-            caseName: enumCase.name,
-            parameters: enumCase.parameters.map { ($0.label, $0.type) },
+            caseName: c.name,
+            parameters: c.parameters.map { ($0.label, $0.type) },
             isPublic: isPublic
         ))
     }
 
-    // Case discriminant — names already escaped from AST
+    // Case discriminant
     let caseNames = cases.map(\.name)
     let caseDiscriminant: DeclSyntax = "\(raw: generateCaseDiscriminant(caseNames: caseNames, isPublic: isPublic))"
     members.append(caseDiscriminant)
