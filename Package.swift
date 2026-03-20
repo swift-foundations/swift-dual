@@ -17,6 +17,10 @@ let package = Package(
             name: "Dual",
             targets: ["Dual"]
         ),
+        .library(
+            name: "Dual Test Support",
+            targets: ["Dual Test Support"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"603.0.0"),
@@ -46,6 +50,13 @@ let package = Package(
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 .product(name: "SwiftDiagnostics", package: "swift-syntax"),
             ]
+        ),
+        .target(
+            name: "Dual Test Support",
+            dependencies: [
+                "Dual",
+            ],
+            path: "Tests/Support"
         ),
         .testTarget(
             name: "Dual Tests",
