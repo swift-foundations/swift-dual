@@ -5,17 +5,5 @@
   "title": "Research Index — swift-dual",
   "blurb": "",
   "scope": "swift-dual (swift-foundations)",
-  "documents": [
-    {
-      "file": "audit.md",
-      "displayName": "audit.md",
-      "topic": "Modularization audit (MOD-001–MOD-014) — 1 FAIL (MOD-011)",
-      "date": "2026-04-08",
-      "status": "LEGACY",
-      "statusDetail": null,
-      "statusRaw": "LEGACY",
-      "tier": null,
-      "scope": null
-    }
-  ]
+  "documents": []
 }
