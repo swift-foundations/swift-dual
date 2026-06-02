@@ -24,8 +24,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"603.0.0"),
-        .package(path: "../../swift-primitives/swift-optic-primitives"),
-        .package(path: "../../swift-primitives/swift-finite-primitives"),
+        .package(url: "https://github.com/swift-primitives/swift-optic-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-finite-primitives.git", branch: "main"),
     ],
     targets: [
         .target(
