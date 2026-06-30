@@ -116,14 +116,24 @@ func expand(
             }
     """)
 
-    body.append("""
-        \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {
-                let prism = Self.prisms[keyPath: keyPath]
-                guard var value = prism.extract(self) else { return }
-                transform(&value)
-                self = prism.embed(value)
-            }
-    """)
+    // An empty struct yields a zero-case (uninhabited) Dual and an empty `Prisms`,
+    // so no `KeyPath<Prisms, Prism<Dual, Value>>` can be formed and `modify` is
+    // uninvokable. Emit an empty body to avoid an unreachable `self = prism.embed(value)`
+    // ("will never be executed", since `embed` would produce a value of the uninhabited Dual).
+    if properties.isEmpty {
+        body.append("""
+            \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {}
+        """)
+    } else {
+        body.append("""
+            \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {
+                    let prism = Self.prisms[keyPath: keyPath]
+                    guard var value = prism.extract(self) else { return }
+                    transform(&value)
+                    self = prism.embed(value)
+                }
+        """)
+    }
 
     let inheritance = sendable
         ? ": Sendable, Optic_Primitives.__OpticPrismAccessible"
