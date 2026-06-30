@@ -21,7 +21,7 @@ func generateCaseDiscriminant(
                         switch self {}
                     }
 
-                    \(inlinableAttr)\(accessModifier)init(__unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
+                    \(inlinableAttr)\(accessModifier)init(_unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
                         fatalError("Case is uninhabited")
                     }
                 }
@@ -54,7 +54,7 @@ func generateCaseDiscriminant(
                     }
                 }
 
-                \(inlinableAttr)\(accessModifier)init(__unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
+                \(inlinableAttr)\(accessModifier)init(_unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
                     switch ordinal.rawValue {
                     \(uncheckedInitCases)
                     }
