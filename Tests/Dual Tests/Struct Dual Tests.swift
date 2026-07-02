@@ -1,4 +1,5 @@
 import Testing
+
 @testable import Dual
 
 @Suite("Struct Dual")

@@ -1,5 +1,5 @@
-@_exported public import Optic_Primitives
 @_exported public import Finite_Primitives
+@_exported public import Optic_Primitives
 
 /// Computes the categorical dual of a type.
 ///
@@ -27,7 +27,8 @@
 @attached(member, names: arbitrary)
 @attached(memberAttribute)
 @attached(extension, conformances: Optic_Primitives.__OpticPrismAccessible, names: arbitrary)
-public macro Dual() = #externalMacro(
-    module: "Dual_Macros_Implementation",
-    type: "DualMacro"
-)
+public macro Dual() =
+    #externalMacro(
+        module: "Dual_Macros_Implementation",
+        type: "DualMacro"
+    )

@@ -13,19 +13,19 @@ func generateCaseDiscriminant(
     guard !caseNames.isEmpty else {
         // Empty enum — uninhabited Case type with count 0
         return """
-            \(accessModifier)enum Case: Finite_Primitives.Finite.Enumerable, Sendable {
+                \(accessModifier)enum Case: Finite_Primitives.Finite.Enumerable, Sendable {
 
-                    \(inlinableAttr)\(accessModifier)static var count: Cardinal_Primitives.Cardinal { Cardinal_Primitives.Cardinal(0) }
+                        \(inlinableAttr)\(accessModifier)static var count: Cardinal_Primitives.Cardinal { Cardinal_Primitives.Cardinal(0) }
 
-                    \(inlinableAttr)\(accessModifier)var ordinal: Ordinal_Primitives.Ordinal {
-                        switch self {}
+                        \(inlinableAttr)\(accessModifier)var ordinal: Ordinal_Primitives.Ordinal {
+                            switch self {}
+                        }
+
+                        \(inlinableAttr)\(accessModifier)init(_unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
+                            fatalError("Case is uninhabited")
+                        }
                     }
-
-                    \(inlinableAttr)\(accessModifier)init(_unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
-                        fatalError("Case is uninhabited")
-                    }
-                }
-        """
+            """
     }
 
     let caseCases = caseNames.map { "case \($0)" }.joined(separator: "\n            ")
@@ -43,22 +43,22 @@ func generateCaseDiscriminant(
     }.joined(separator: "\n                ")
 
     return """
-        \(accessModifier)enum Case: Finite_Primitives.Finite.Enumerable, Sendable {
-                \(caseCases)
+            \(accessModifier)enum Case: Finite_Primitives.Finite.Enumerable, Sendable {
+                    \(caseCases)
 
-                \(inlinableAttr)\(accessModifier)static var count: Cardinal_Primitives.Cardinal { Cardinal_Primitives.Cardinal(\(caseCount)) }
+                    \(inlinableAttr)\(accessModifier)static var count: Cardinal_Primitives.Cardinal { Cardinal_Primitives.Cardinal(\(caseCount)) }
 
-                \(inlinableAttr)\(accessModifier)var ordinal: Ordinal_Primitives.Ordinal {
-                    switch self {
-                    \(caseOrdinalCases)
+                    \(inlinableAttr)\(accessModifier)var ordinal: Ordinal_Primitives.Ordinal {
+                        switch self {
+                        \(caseOrdinalCases)
+                        }
+                    }
+
+                    \(inlinableAttr)\(accessModifier)init(_unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
+                        switch ordinal.rawValue {
+                        \(uncheckedInitCases)
+                        }
                     }
                 }
-
-                \(inlinableAttr)\(accessModifier)init(_unchecked: Void, ordinal: Ordinal_Primitives.Ordinal) {
-                    switch ordinal.rawValue {
-                    \(uncheckedInitCases)
-                    }
-                }
-            }
-    """
+        """
 }

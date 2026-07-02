@@ -1,7 +1,7 @@
+import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
-import SwiftDiagnostics
 
 // MARK: - DualMacro
 
@@ -44,10 +44,12 @@ extension DualMacro: MemberMacro {
             return expand(structDecl, node: node, context: context)
         }
 
-        context.diagnose(SwiftDiagnostics.Diagnostic(
-            node: node,
-            message: Diagnostic.requiresStructOrEnum
-        ))
+        context.diagnose(
+            SwiftDiagnostics.Diagnostic(
+                node: node,
+                message: Diagnostic.requiresStructOrEnum
+            )
+        )
         return []
     }
 }
@@ -64,10 +66,11 @@ extension DualMacro: MemberAttributeMacro {
         if declaration.is(EnumDeclSyntax.self) { return [] }
 
         guard let varDecl = member.as(VariableDeclSyntax.self),
-              let binding = varDecl.bindings.first,
-              binding.accessorBlock == nil,
-              binding.pattern.is(IdentifierPatternSyntax.self),
-              binding.typeAnnotation != nil else {
+            let binding = varDecl.bindings.first,
+            binding.accessorBlock == nil,
+            binding.pattern.is(IdentifierPatternSyntax.self),
+            binding.typeAnnotation != nil
+        else {
             return []
         }
 

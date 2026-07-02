@@ -3,9 +3,7 @@ import SwiftSyntax
 /// Whether modifiers include package, private, or fileprivate access.
 func hasRestrictedAccess(_ modifiers: DeclModifierListSyntax) -> Bool {
     modifiers.contains {
-        $0.name.tokenKind == .keyword(.package) ||
-        $0.name.tokenKind == .keyword(.private) ||
-        $0.name.tokenKind == .keyword(.fileprivate)
+        $0.name.tokenKind == .keyword(.package) || $0.name.tokenKind == .keyword(.private) || $0.name.tokenKind == .keyword(.fileprivate)
     }
 }
 
@@ -14,8 +12,9 @@ func hasRestrictedAccess(_ modifiers: DeclModifierListSyntax) -> Bool {
 func canInline(from members: MemberBlockSyntax) -> Bool {
     members.members.allSatisfy { member in
         guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-              let binding = varDecl.bindings.first,
-              binding.accessorBlock == nil else { return true }
+            let binding = varDecl.bindings.first,
+            binding.accessorBlock == nil
+        else { return true }
         return !hasRestrictedAccess(varDecl.modifiers)
     }
 }

@@ -1,7 +1,7 @@
+import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
-import SwiftDiagnostics
 
 // MARK: - Property Extraction
 
@@ -15,7 +15,8 @@ struct Property {
 func extractProperties(from structDecl: StructDeclSyntax) -> [Property] {
     structDecl.memberBlock.members.flatMap { member -> [Property] in
         guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-              !varDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) }) else {
+            !varDecl.modifiers.contains(where: { $0.name.tokenKind == .keyword(.static) })
+        else {
             return []
         }
 
@@ -25,8 +26,9 @@ func extractProperties(from structDecl: StructDeclSyntax) -> [Property] {
 
         return varDecl.bindings.compactMap { binding in
             guard let identifier = binding.pattern.as(IdentifierPatternSyntax.self),
-                  let typeAnnotation = binding.typeAnnotation,
-                  binding.accessorBlock == nil else { return nil }
+                let typeAnnotation = binding.typeAnnotation,
+                binding.accessorBlock == nil
+            else { return nil }
 
             // .text preserves backtick escaping — use directly, do NOT re-escape.
             return Property(
@@ -76,66 +78,81 @@ func expand(
     let caseCases = properties.map { "case .\($0.name): .\($0.name)" }
         .joined(separator: "\n            ")
 
-    body.append("""
-        \(inline)\(access)var `case`: Case {
-                switch self {
-                \(caseCases)
+    body.append(
+        """
+            \(inline)\(access)var `case`: Case {
+                    switch self {
+                    \(caseCases)
+                    }
                 }
-            }
-    """)
+        """
+    )
 
     // Prisms struct
     let prisms = properties.map { prop in
-        generatePrism(for: PrismCase(
-            caseName: prop.name,
-            rootTypeName: "Dual",
-            parameters: [(label: nil, type: prop.type)]
-        ))
+        generatePrism(
+            for: PrismCase(
+                caseName: prop.name,
+                rootTypeName: "Dual",
+                parameters: [(label: nil, type: prop.type)]
+            )
+        )
     }.joined(separator: "\n\n        ")
 
-    body.append("""
-        \(access)struct Prisms: Sendable {
-                \(inline)\(access)init() {}
+    body.append(
+        """
+            \(access)struct Prisms: Sendable {
+                    \(inline)\(access)init() {}
 
-                \(prisms)
-            }
-    """)
+                    \(prisms)
+                }
+        """
+    )
 
     // static var prisms, is(_:), subscript[prism:], modify(_:_:)
     body.append("\(inline)\(access)static var prisms: Prisms { Prisms() }")
 
-    body.append("""
-        \(inline)\(access)func `is`<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>) -> Bool {
-                Self.prisms[keyPath: keyPath].extract(self) != nil
-            }
-    """)
+    body.append(
+        """
+            \(inline)\(access)func `is`<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>) -> Bool {
+                    Self.prisms[keyPath: keyPath].extract(self) != nil
+                }
+        """
+    )
 
-    body.append("""
-        \(inline)\(access)subscript<Value>(prism keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>) -> Value? {
-                Self.prisms[keyPath: keyPath].extract(self)
-            }
-    """)
+    body.append(
+        """
+            \(inline)\(access)subscript<Value>(prism keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>) -> Value? {
+                    Self.prisms[keyPath: keyPath].extract(self)
+                }
+        """
+    )
 
     // An empty struct yields a zero-case (uninhabited) Dual and an empty `Prisms`,
     // so no `KeyPath<Prisms, Prism<Dual, Value>>` can be formed and `modify` is
     // uninvokable. Emit an empty body to avoid an unreachable `self = prism.embed(value)`
     // ("will never be executed", since `embed` would produce a value of the uninhabited Dual).
     if properties.isEmpty {
-        body.append("""
-            \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {}
-        """)
+        body.append(
+            """
+                \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {}
+            """
+        )
     } else {
-        body.append("""
-            \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {
-                    let prism = Self.prisms[keyPath: keyPath]
-                    guard var value = prism.extract(self) else { return }
-                    transform(&value)
-                    self = prism.embed(value)
-                }
-        """)
+        body.append(
+            """
+                \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {
+                        let prism = Self.prisms[keyPath: keyPath]
+                        guard var value = prism.extract(self) else { return }
+                        transform(&value)
+                        self = prism.embed(value)
+                    }
+            """
+        )
     }
 
-    let inheritance = sendable
+    let inheritance =
+        sendable
         ? ": Sendable, Optic_Primitives.__OpticPrismAccessible"
         : ": Optic_Primitives.__OpticPrismAccessible"
 

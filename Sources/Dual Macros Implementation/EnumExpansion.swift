@@ -1,7 +1,7 @@
+import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
-import SwiftDiagnostics
 
 // MARK: - Case Extraction
 
@@ -41,10 +41,12 @@ func expand(
     let cases = extractCases(from: enumDecl)
 
     guard !cases.isEmpty else {
-        context.diagnose(Diagnostic(
-            node: node,
-            message: DualMacro.Diagnostic.noEnumCases
-        ))
+        context.diagnose(
+            Diagnostic(
+                node: node,
+                message: DualMacro.Diagnostic.noEnumCases
+            )
+        )
         return []
     }
 
@@ -63,10 +65,12 @@ func expand(
         if c.parameters.isEmpty {
             closureParams = "()"
         } else {
-            closureParams = "(" + c.parameters.map { p in
-                let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
-                return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
-            }.joined(separator: ", ") + ")"
+            closureParams =
+                "("
+                + c.parameters.map { p in
+                    let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
+                    return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
+                }.joined(separator: ", ") + ")"
         }
         return "\(access)var \(c.name): \(sendableAnnotation)\(closureParams) -> R"
     }.joined(separator: "\n        ")
@@ -76,10 +80,12 @@ func expand(
         if c.parameters.isEmpty {
             closureParams = "()"
         } else {
-            closureParams = "(" + c.parameters.map { p in
-                let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
-                return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
-            }.joined(separator: ", ") + ")"
+            closureParams =
+                "("
+                + c.parameters.map { p in
+                    let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
+                    return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
+                }.joined(separator: ", ") + ")"
         }
         return "\(c.name): @escaping \(sendableAnnotation)\(closureParams) -> R"
     }.joined(separator: ",\n            ")
@@ -132,11 +138,13 @@ func expand(
 
     // Extraction properties
     for c in cases {
-        members.append(generateExtractionProperty(
-            caseName: c.name,
-            parameters: c.parameters.map { ($0.label, $0.type) },
-            isPublic: isPublic
-        ))
+        members.append(
+            generateExtractionProperty(
+                caseName: c.name,
+                parameters: c.parameters.map { ($0.label, $0.type) },
+                isPublic: isPublic
+            )
+        )
     }
 
     // Case discriminant
@@ -145,23 +153,29 @@ func expand(
     members.append(caseDiscriminant)
 
     // var case: Case
-    members.append(generateCaseProperty(
-        caseNames: caseNames,
-        isPublic: isPublic
-    ))
+    members.append(
+        generateCaseProperty(
+            caseNames: caseNames,
+            isPublic: isPublic
+        )
+    )
 
     // Prisms struct
-    members.append(generatePrismsStruct(
-        cases: cases.map { ($0.name, $0.parameters.map { ($0.label, $0.type) }) },
-        rootTypeName: enumName,
-        isPublic: isPublic
-    ))
+    members.append(
+        generatePrismsStruct(
+            cases: cases.map { ($0.name, $0.parameters.map { ($0.label, $0.type) }) },
+            rootTypeName: enumName,
+            isPublic: isPublic
+        )
+    )
 
     // Prism accessors
-    members.append(contentsOf: generatePrismAccessors(
-        rootTypeName: enumName,
-        isPublic: isPublic
-    ))
+    members.append(
+        contentsOf: generatePrismAccessors(
+            rootTypeName: enumName,
+            isPublic: isPublic
+        )
+    )
 
     return members
 }

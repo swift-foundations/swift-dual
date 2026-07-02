@@ -1,5 +1,5 @@
-import Testing
 public import Dual
+import Testing
 
 // MARK: - Struct Fixtures
 
