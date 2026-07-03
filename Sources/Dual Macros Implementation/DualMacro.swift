@@ -14,6 +14,7 @@ public struct DualMacro {
             switch self {
             case .requiresStructOrEnum:
                 "@Dual can only be applied to structs or enums"
+
             case .noEnumCases:
                 "@Dual requires an enum containing at least one case"
             }
