@@ -36,6 +36,8 @@ extension DualMacro: MemberMacro {
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
+            // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
+            // swiftlint:disable:next typed_throws_required
     ) throws -> [DeclSyntax] {
         if let enumDecl = declaration.as(EnumDeclSyntax.self) {
             return expand(enumDecl, node: node, context: context)
@@ -63,6 +65,8 @@ extension DualMacro: MemberAttributeMacro {
         attachedTo declaration: some DeclGroupSyntax,
         providingAttributesFor member: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
+            // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
+            // swiftlint:disable:next typed_throws_required
     ) throws -> [AttributeSyntax] {
         if declaration.is(EnumDeclSyntax.self) { return [] }
 
@@ -96,6 +100,8 @@ extension DualMacro: ExtensionMacro {
         providingExtensionsOf type: some TypeSyntaxProtocol,
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
+            // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
+            // swiftlint:disable:next typed_throws_required
     ) throws -> [ExtensionDeclSyntax] {
         guard declaration.is(EnumDeclSyntax.self) else { return [] }
         return [try ExtensionDeclSyntax("extension \(type.trimmed): Optic_Primitives.__OpticPrismAccessible {}")]
