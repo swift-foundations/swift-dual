@@ -8,7 +8,9 @@ import SwiftSyntaxMacros
 struct Case: Sendable {
     let name: String
     let parameters: [Parameter]
+}
 
+extension Case {
     struct Parameter: Sendable {
         let label: String?
         let type: String

@@ -5,27 +5,33 @@ import SwiftSyntaxMacros
 
 // MARK: - DualMacro
 
-public struct DualMacro {
+public struct DualMacro {}
+
+// MARK: - Diagnostic
+
+extension DualMacro {
     enum Diagnostic: String, DiagnosticMessage {
         case requiresStructOrEnum
         case noEnumCases
-
-        var message: String {
-            switch self {
-            case .requiresStructOrEnum:
-                "@Dual can only be applied to structs or enums"
-
-            case .noEnumCases:
-                "@Dual requires an enum containing at least one case"
-            }
-        }
-
-        var diagnosticID: MessageID {
-            MessageID(domain: "DualMacro", id: rawValue)
-        }
-
-        var severity: DiagnosticSeverity { .error }
     }
+}
+
+extension DualMacro.Diagnostic {
+    var message: String {
+        switch self {
+        case .requiresStructOrEnum:
+            "@Dual can only be applied to structs or enums"
+
+        case .noEnumCases:
+            "@Dual requires an enum containing at least one case"
+        }
+    }
+
+    var diagnosticID: MessageID {
+        MessageID(domain: "DualMacro", id: rawValue)
+    }
+
+    var severity: DiagnosticSeverity { .error }
 }
 
 // MARK: - MemberMacro
