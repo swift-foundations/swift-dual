@@ -10,7 +10,7 @@ struct EnumDualTests {
 
         // MARK: - Route
 
-        @Test func routeMatchDispatches() {
+        @Test func `route match dispatches`() {
             let describe = Route.Dual<String>(
                 home: { "Home" },
                 profile: { id in "Profile \(id)" },
@@ -21,42 +21,42 @@ struct EnumDualTests {
             #expect(Route.settings.match(describe) == "Settings")
         }
 
-        @Test func routeExtraction() {
+        @Test func `route extraction`() {
             #expect(Route.home.home != nil)
             #expect(Route.home.profile == nil)
             #expect(Route.profile(id: 42).profile == 42)
         }
 
-        @Test func routeCaseDiscriminant() {
+        @Test func `route case discriminant`() {
             #expect(Route.Case.home.ordinal.rawValue == 0)
             #expect(Route.Case.profile.ordinal.rawValue == 1)
             #expect(Route.Case.settings.ordinal.rawValue == 2)
             #expect(Route.Case.count.rawValue == 3)
         }
 
-        @Test func routeCaseProperty() {
+        @Test func `route case property`() {
             #expect(Route.home.case == .home)
             #expect(Route.profile(id: 1).case == .profile)
             #expect(Route.settings.case == .settings)
         }
 
-        @Test func routePrisms() {
+        @Test func `route prisms`() {
             #expect(Route.prisms.home.extract(.home) != nil)
             #expect(Route.prisms.profile.extract(.profile(id: 42)) == 42)
             #expect(Route.prisms.profile.extract(.home) == nil)
         }
 
-        @Test func routeIsMethod() {
+        @Test func `route is method`() {
             #expect(Route.home.is(\.home) == true)
             #expect(Route.home.is(\.profile) == false)
         }
 
-        @Test func routePrismSubscript() {
+        @Test func `route prism subscript`() {
             #expect(Route.profile(id: 42)[prism: \.profile] == 42)
             #expect(Route.home[prism: \.profile] == nil)
         }
 
-        @Test func routeModify() {
+        @Test func `route modify`() {
             var r = Route.profile(id: 1)
             r.modify(\.profile) { $0 = 99 }
             #expect(r.profile == 99)
@@ -64,13 +64,13 @@ struct EnumDualTests {
 
         // MARK: - Action (multi-param)
 
-        @Test func actionTransformExtraction() {
+        @Test func `action transform extraction`() {
             let t = Action.transform(input: 1, scale: 2.0).transform
             #expect(t?.input == 1)
             #expect(t?.scale == 2.0)
         }
 
-        @Test func actionMatch() {
+        @Test func `action match`() {
             let handler = Action.Dual<String>(
                 load: { "Loading" },
                 save: { path in "Saving \(path)" },
@@ -87,7 +87,7 @@ struct EnumDualTests {
 
         // MARK: - KeywordCases
 
-        @Test func keywordCasesCompileAndMatch() {
+        @Test func `keyword cases compile and match`() {
             let handler = KeywordCases.Dual<String>(
                 default: { "Default" },
                 return: { value in "Return \(value)" }
@@ -96,7 +96,7 @@ struct EnumDualTests {
             #expect(KeywordCases.return(value: "ok").match(handler) == "Return ok")
         }
 
-        @Test func keywordCasesExtraction() {
+        @Test func `keyword cases extraction`() {
             #expect(KeywordCases.default.`default` != nil)
             #expect(KeywordCases.default.`return` == nil)
             #expect(KeywordCases.return(value: "x").`return` == "x")
