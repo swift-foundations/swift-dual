@@ -35,9 +35,13 @@ let package = Package(
             ]
         ),
         .target(
+            name: "Case Paths"
+        ),
+        .target(
             name: "Dual Macros",
             dependencies: [
                 "Dual Macros Implementation",
+                "Case Paths",
                 .product(name: "Optic Primitives", package: "swift-optic-primitives"),
                 .product(name: "Finite Primitives", package: "swift-finite-primitives"),
             ]
