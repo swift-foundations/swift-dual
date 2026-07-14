@@ -81,7 +81,7 @@ struct CasePathTests {
 
     @Test func `real @Dual and @Cases coexist in one target`() {
         // `Route` is @Dual (Test Fixtures.swift); `Screen` is @Cases — both build & run here.
-        #expect(Route.home.is(\.home) == true)   // @Dual prism `is`
+        #expect(Route.home.is(\.home) == true)  // @Dual prism `is`
         #expect(Screen.home.is(\.home) == true)  // @Cases case-path `is`
         // The @Dual discriminant and the @Cases witness are both present, no collision.
         #expect(Outer.only.case == .only)

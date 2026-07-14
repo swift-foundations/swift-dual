@@ -24,8 +24,8 @@ extension Case {
         ) -> Case.Path<Root, Sub> where Value: CaseAnalyzable {
             let inner = Value.cases[keyPath: keyPath]
             return Case.Path<Root, Sub>(
-                embed: { sub in self.embed(inner.embed(sub)) },
-                extract: { root in self.extract(root).flatMap(inner.extract) }
+                embed: { sub in embed(inner.embed(sub)) },
+                extract: { root in extract(root).flatMap(inner.extract) }
             )
         }
     }
