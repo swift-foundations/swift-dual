@@ -2,11 +2,11 @@ import Testing
 
 @testable import Dual
 
-@Suite("Enum Dual")
-struct EnumDualTests {
+@Suite
+struct Test {
 
-    @Suite("Unit")
-    struct Unit {
+    @Suite
+    struct `Unit` {
 
         // MARK: - Route
 
@@ -82,8 +82,8 @@ struct EnumDualTests {
         }
     }
 
-    @Suite("Edge Cases")
-    struct EdgeCase {
+    @Suite
+    struct `Edge Cases` {
 
         // MARK: - KeywordCases
 

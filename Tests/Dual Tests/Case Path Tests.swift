@@ -2,8 +2,8 @@ import Testing
 
 @testable import Dual
 
-@Suite("Case Path")
-struct CasePathTests {
+@Suite
+struct Test {
 
     // MARK: Part 1 — `.is(\.case)` keypath-literal shape (depth-1)
 

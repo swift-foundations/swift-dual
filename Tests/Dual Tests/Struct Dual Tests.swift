@@ -2,11 +2,11 @@ import Testing
 
 @testable import Dual
 
-@Suite("Struct Dual")
-struct StructDualTests {
+@Suite
+struct Test {
 
-    @Suite("Unit")
-    struct Unit {
+    @Suite
+    struct `Unit` {
 
         // MARK: - Config (mixed types)
 
@@ -97,8 +97,8 @@ struct StructDualTests {
         }
     }
 
-    @Suite("Edge Cases")
-    struct EdgeCase {
+    @Suite
+    struct `Edge Cases` {
 
         // MARK: - StatuteArgs (space-containing identifiers)
 
