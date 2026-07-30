@@ -3,7 +3,7 @@ import Testing
 @testable import Dual
 
 @Suite
-struct Test {
+struct CasePathTests {
 
     // MARK: Part 1 — `.is(\.case)` keypath-literal shape (depth-1)
 

@@ -5,6 +5,7 @@
 // attaching both macros to one declaration must diagnose on each attribute and
 // expand to nothing.
 
+import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxMacroExpansion
 import SwiftSyntaxMacros

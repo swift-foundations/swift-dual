@@ -3,7 +3,7 @@ import Testing
 @testable import Dual
 
 @Suite
-struct Test {
+struct StructDualTests {
 
     @Suite
     struct `Unit` {
