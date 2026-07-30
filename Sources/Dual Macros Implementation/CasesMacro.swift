@@ -24,11 +24,15 @@ extension CasesMacro {
     enum Message: String, DiagnosticMessage {
         case requiresEnum
         case noEnumCases
+        case coAttachedWithDual
 
         var message: String {
             switch self {
             case .requiresEnum: "@Cases can only be applied to an enum"
             case .noEnumCases: "@Cases requires an enum with at least one case"
+
+            case .coAttachedWithDual:
+                "@Cases and @Dual must not be attached to the same declaration"
             }
         }
         var diagnosticID: MessageID { MessageID(domain: "CasesMacro", id: rawValue) }
@@ -47,6 +51,10 @@ extension CasesMacro: MemberMacro {
             // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
             // swiftlint:disable:next typed_throws_required
     ) throws -> [DeclSyntax] {
+        guard !hasAttribute(declaration, named: "Dual") else {
+            context.diagnose(SwiftDiagnostics.Diagnostic(node: node, message: Message.coAttachedWithDual))
+            return []
+        }
         guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
             context.diagnose(SwiftDiagnostics.Diagnostic(node: node, message: Message.requiresEnum))
             return []
@@ -76,6 +84,8 @@ extension CasesMacro: ExtensionMacro {
             // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
             // swiftlint:disable:next typed_throws_required
     ) throws -> [ExtensionDeclSyntax] {
+        // Co-attachment with @Dual is diagnosed by the member role; emit nothing here.
+        guard !hasAttribute(declaration, named: "Dual") else { return [] }
         guard declaration.is(EnumDeclSyntax.self) else { return [] }
         return [try ExtensionDeclSyntax("extension \(type.trimmed): Case_Paths.CaseAnalyzable {}")]
     }

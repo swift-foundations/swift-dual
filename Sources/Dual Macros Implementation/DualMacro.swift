@@ -13,6 +13,7 @@ extension DualMacro {
     enum Diagnostic: String, DiagnosticMessage {
         case requiresStructOrEnum
         case noEnumCases
+        case coAttachedWithCases
     }
 }
 
@@ -24,6 +25,9 @@ extension DualMacro.Diagnostic {
 
         case .noEnumCases:
             "@Dual requires an enum containing at least one case"
+
+        case .coAttachedWithCases:
+            "@Dual and @Cases must not be attached to the same declaration"
         }
     }
 
@@ -45,6 +49,16 @@ extension DualMacro: MemberMacro {
             // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
             // swiftlint:disable:next typed_throws_required
     ) throws -> [DeclSyntax] {
+        guard !hasAttribute(declaration, named: "Cases") else {
+            context.diagnose(
+                SwiftDiagnostics.Diagnostic(
+                    node: node,
+                    message: Diagnostic.coAttachedWithCases
+                )
+            )
+            return []
+        }
+
         if let enumDecl = declaration.as(EnumDeclSyntax.self) {
             return expand(enumDecl, node: node, context: context)
         }
@@ -74,6 +88,8 @@ extension DualMacro: MemberAttributeMacro {
             // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
             // swiftlint:disable:next typed_throws_required
     ) throws -> [AttributeSyntax] {
+        // Co-attachment with @Cases is diagnosed by the member role; emit nothing here.
+        guard !hasAttribute(declaration, named: "Cases") else { return [] }
         if declaration.is(EnumDeclSyntax.self) { return [] }
 
         guard let varDecl = member.as(VariableDeclSyntax.self),
@@ -109,6 +125,8 @@ extension DualMacro: ExtensionMacro {
             // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
             // swiftlint:disable:next typed_throws_required
     ) throws -> [ExtensionDeclSyntax] {
+        // Co-attachment with @Cases is diagnosed by the member role; emit nothing here.
+        guard !hasAttribute(declaration, named: "Cases") else { return [] }
         guard declaration.is(EnumDeclSyntax.self) else { return [] }
         return [try ExtensionDeclSyntax("extension \(type.trimmed): Optic_Primitives.__OpticPrismAccessible {}")]
     }

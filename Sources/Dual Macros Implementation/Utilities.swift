@@ -30,3 +30,14 @@ func isSendable(_ declaration: some DeclGroupSyntax) -> Bool {
 func isPublicDecl(_ declaration: some DeclGroupSyntax) -> Bool {
     declaration.modifiers.contains { $0.name.tokenKind == .keyword(.public) }
 }
+
+/// Whether the declaration carries an attached attribute with the given simple name.
+///
+/// Used to enforce the `@Cases` / `@Dual` co-attachment prohibition: each macro
+/// checks for the other's attribute on the shared declaration.
+func hasAttribute(_ declaration: some DeclGroupSyntax, named name: String) -> Bool {
+    declaration.attributes.contains { element in
+        guard case .attribute(let attribute) = element else { return false }
+        return attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.text == name
+    }
+}

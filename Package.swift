@@ -67,6 +67,13 @@ let package = Package(
             dependencies: [
                 "Dual"
             ]
+        ),
+        .testTarget(
+            name: "Dual Macros Tests",
+            dependencies: [
+                "Dual Macros Implementation",
+                .product(name: "SwiftSyntaxMacrosGenericTestSupport", package: "swift-syntax"),
+            ]
         )
     ],
     swiftLanguageModes: [.v6]
