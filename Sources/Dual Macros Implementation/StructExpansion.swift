@@ -67,7 +67,9 @@ func expand(
     // Extraction properties — wrap type in parens for closure types:
     // `(@Sendable (Int) -> String)?` not `@Sendable (Int) -> String?`
     for prop in properties {
-        body.append("\(inline)\(access)var \(prop.name): (\(prop.type))? { if case .\(prop.name)(let v) = self { v } else { nil } }")
+        body.append(
+            "\(inline)\(access)var \(prop.name): (\(prop.type))? { if case .\(prop.name)(let v) = self { v } else { nil } }"
+        )
     }
 
     // Case discriminant

@@ -103,7 +103,9 @@ extension DualMacro: MemberAttributeMacro {
 
         guard let structDecl = declaration.as(StructDeclSyntax.self) else { return [] }
 
-        let isPublicStruct = structDecl.modifiers.contains { $0.name.tokenKind == .keyword(.public) }
+        let isPublicStruct = structDecl.modifiers.contains {
+            $0.name.tokenKind == .keyword(.public)
+        }
         let isPublicMember = varDecl.modifiers.contains { $0.name.tokenKind == .keyword(.public) }
 
         if isPublicStruct && !isPublicMember && !hasRestrictedAccess(varDecl.modifiers) {
@@ -128,6 +130,10 @@ extension DualMacro: ExtensionMacro {
         // Co-attachment with @Cases is diagnosed by the member role; emit nothing here.
         guard !hasAttribute(declaration, named: "Cases") else { return [] }
         guard declaration.is(EnumDeclSyntax.self) else { return [] }
-        return [try ExtensionDeclSyntax("extension \(type.trimmed): Optic_Primitives.__OpticPrismAccessible {}")]
+        return [
+            try ExtensionDeclSyntax(
+                "extension \(type.trimmed): Optic_Primitives.__OpticPrismAccessible {}"
+            )
+        ]
     }
 }
