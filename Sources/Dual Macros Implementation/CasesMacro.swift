@@ -52,7 +52,9 @@ extension CasesMacro: MemberMacro {
             // swiftlint:disable:next typed_throws_required
     ) throws -> [DeclSyntax] {
         guard !hasAttribute(declaration, named: "Dual") else {
-            context.diagnose(SwiftDiagnostics.Diagnostic(node: node, message: Message.coAttachedWithDual))
+            context.diagnose(
+                SwiftDiagnostics.Diagnostic(node: node, message: Message.coAttachedWithDual)
+            )
             return []
         }
         guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {

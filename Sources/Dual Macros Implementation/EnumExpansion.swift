@@ -26,7 +26,10 @@ func extractCases(from enumDecl: EnumDeclSyntax) -> [Case] {
             Case(
                 name: element.name.text,
                 parameters: element.parameterClause?.parameters.map { param in
-                    Case.Parameter(label: param.firstName?.text, type: param.type.trimmedDescription)
+                    Case.Parameter(
+                        label: param.firstName?.text,
+                        type: param.type.trimmedDescription
+                    )
                 } ?? []
             )
         }
@@ -71,7 +74,8 @@ func expand(
                 "("
                 + c.parameters.map { p in
                     let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
-                    return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
+                    return c.parameters.count == 1
+                        ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
                 }.joined(separator: ", ") + ")"
         }
         return "\(access)var \(c.name): \(sendableAnnotation)\(closureParams) -> R"
@@ -86,7 +90,8 @@ func expand(
                 "("
                 + c.parameters.map { p in
                     let label = p.label != nil ? "_ \(p.label!): " : "_ arg: "
-                    return c.parameters.count == 1 ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
+                    return c.parameters.count == 1
+                        ? "\(label)\(p.type)" : "_ \(p.label ?? "_"): \(p.type)"
                 }.joined(separator: ", ") + ")"
         }
         return "\(c.name): @escaping \(sendableAnnotation)\(closureParams) -> R"
@@ -151,7 +156,8 @@ func expand(
 
     // Case discriminant
     let caseNames = cases.map(\.name)
-    let caseDiscriminant: DeclSyntax = "\(raw: generateCaseDiscriminant(caseNames: caseNames, isPublic: isPublic))"
+    let caseDiscriminant: DeclSyntax =
+        "\(raw: generateCaseDiscriminant(caseNames: caseNames, isPublic: isPublic))"
     members.append(caseDiscriminant)
 
     // var case: Case

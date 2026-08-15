@@ -3,7 +3,8 @@ import SwiftSyntax
 /// Whether modifiers include package, private, or fileprivate access.
 func hasRestrictedAccess(_ modifiers: DeclModifierListSyntax) -> Bool {
     modifiers.contains {
-        $0.name.tokenKind == .keyword(.package) || $0.name.tokenKind == .keyword(.private) || $0.name.tokenKind == .keyword(.fileprivate)
+        $0.name.tokenKind == .keyword(.package) || $0.name.tokenKind == .keyword(.private)
+            || $0.name.tokenKind == .keyword(.fileprivate)
     }
 }
 

@@ -73,7 +73,8 @@ extension CasesMacro {
 extension CasesMacro.Test.`Edge Case` {
 
     @Test
-    func `attaching @Cases and @Dual to one enum diagnoses on both attributes and expands nothing`() {
+    func `attaching @Cases and @Dual to one enum diagnoses on both attributes and expands nothing`()
+    {
         expectMacroExpansion(
             """
             @Cases @Dual
