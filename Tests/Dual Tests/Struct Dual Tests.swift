@@ -8,8 +8,6 @@ struct StructDualTests {
     @Suite
     struct `Unit` {
 
-        // MARK: - Config (mixed types)
-
         @Test func `config dual host extraction`() {
             #expect(Config.Dual.host("x").host == "x")
         }
@@ -57,8 +55,6 @@ struct StructDualTests {
             #expect(d.host == "new")
         }
 
-        // MARK: - Homogeneous (same-type subscript)
-
         @Test func `homogeneous subscript get`() {
             let h = Homogeneous(x: 1, y: 2, z: 3)
             #expect(h[case: .x] == 1)
@@ -74,8 +70,6 @@ struct StructDualTests {
             #expect(h.y == 20)
         }
 
-        // MARK: - SingleField
-
         @Test func `single field dual`() {
             let d = SingleField.Dual.value("hello")
             #expect(d.value == "hello")
@@ -89,8 +83,6 @@ struct StructDualTests {
             #expect(s.value == "b")
         }
 
-        // MARK: - WithClosures
-
         @Test func `with closures dual exists`() {
             let d = WithClosures.Dual.total(42)
             #expect(d.total == 42)
@@ -99,8 +91,6 @@ struct StructDualTests {
 
     @Suite
     struct `Edge Cases` {
-
-        // MARK: - StatuteArgs (space-containing identifiers)
 
         @Test func `statute args homogeneous subscript`() {
             var args = StatuteArgs()
@@ -116,8 +106,6 @@ struct StructDualTests {
             }
             #expect(count == 3)
         }
-
-        // MARK: - LetOnly (get-only subscript)
 
         @Test func `let only subscript get only`() {
             let l = LetOnly(x: 5, y: 10)

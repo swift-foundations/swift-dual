@@ -1,14 +1,12 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-/// Common representation for a prism case, used by both struct Dual and enum prism generation.
 struct PrismCase {
     let caseName: String
     let rootTypeName: String
     let parameters: [(label: String?, type: String)]
 }
 
-/// Generates a single prism property for a case.
 func generatePrism(for prismCase: PrismCase) -> String {
     let name = prismCase.caseName
     let root = prismCase.rootTypeName

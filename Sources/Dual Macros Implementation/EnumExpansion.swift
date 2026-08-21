@@ -3,8 +3,6 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-// MARK: - Case Extraction
-
 struct Case: Sendable {
     let name: String
     let parameters: [Parameter]
@@ -22,7 +20,7 @@ func extractCases(from enumDecl: EnumDeclSyntax) -> [Case] {
         guard let caseDecl = member.decl.as(EnumCaseDeclSyntax.self) else { return [] }
 
         return caseDecl.elements.map { element in
-            // .text preserves backtick escaping — use directly, do NOT re-escape.
+
             Case(
                 name: element.name.text,
                 parameters: element.parameterClause?.parameters.map { param in
@@ -35,8 +33,6 @@ func extractCases(from enumDecl: EnumDeclSyntax) -> [Case] {
         }
     }
 }
-
-// MARK: - Enum → Dual<R> Struct + Infrastructure Expansion
 
 func expand(
     _ enumDecl: EnumDeclSyntax,
@@ -64,7 +60,6 @@ func expand(
 
     var members: [DeclSyntax] = []
 
-    // 1. Dual<R> struct (Scott encoding)
     let dualProperties = cases.map { c in
         let closureParams: String
         if c.parameters.isEmpty {
@@ -113,7 +108,6 @@ func expand(
         """
     members.append(dualStruct)
 
-    // 2. match function
     let matchCases = cases.map { c in
         if c.parameters.isEmpty {
             return "case .\(c.name): dual.\(c.name)()"
@@ -141,9 +135,6 @@ func expand(
         """
     members.append(matchFunc)
 
-    // 3. Enum infrastructure
-
-    // Extraction properties
     for c in cases {
         members.append(
             generateExtractionProperty(
@@ -154,13 +145,11 @@ func expand(
         )
     }
 
-    // Case discriminant
     let caseNames = cases.map(\.name)
     let caseDiscriminant: DeclSyntax =
         "\(raw: generateCaseDiscriminant(caseNames: caseNames, isPublic: isPublic))"
     members.append(caseDiscriminant)
 
-    // var case: Case
     members.append(
         generateCaseProperty(
             caseNames: caseNames,
@@ -168,7 +157,6 @@ func expand(
         )
     )
 
-    // Prisms struct
     members.append(
         generatePrismsStruct(
             cases: cases.map { ($0.name, $0.parameters.map { ($0.label, $0.type) }) },
@@ -177,7 +165,6 @@ func expand(
         )
     )
 
-    // Prism accessors
     members.append(
         contentsOf: generatePrismAccessors(
             rootTypeName: enumName,

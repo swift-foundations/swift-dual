@@ -3,11 +3,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-// MARK: - DualMacro
-
 public struct DualMacro {}
-
-// MARK: - Diagnostic
 
 extension DualMacro {
     enum Diagnostic: String, DiagnosticMessage {
@@ -38,16 +34,13 @@ extension DualMacro.Diagnostic {
     var severity: DiagnosticSeverity { .error }
 }
 
-// MARK: - MemberMacro
-
 extension DualMacro: MemberMacro {
     public static func expansion(
         of node: AttributeSyntax,
         providingMembersOf declaration: some DeclGroupSyntax,
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
-            // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
-            // swiftlint:disable:next typed_throws_required
+
     ) throws -> [DeclSyntax] {
         guard !hasAttribute(declaration, named: "Cases") else {
             context.diagnose(
@@ -77,18 +70,15 @@ extension DualMacro: MemberMacro {
     }
 }
 
-// MARK: - MemberAttributeMacro
-
 extension DualMacro: MemberAttributeMacro {
     public static func expansion(
         of node: AttributeSyntax,
         attachedTo declaration: some DeclGroupSyntax,
         providingAttributesFor member: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
-            // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
-            // swiftlint:disable:next typed_throws_required
+
     ) throws -> [AttributeSyntax] {
-        // Co-attachment with @Cases is diagnosed by the member role; emit nothing here.
+
         guard !hasAttribute(declaration, named: "Cases") else { return [] }
         if declaration.is(EnumDeclSyntax.self) { return [] }
 
@@ -115,8 +105,6 @@ extension DualMacro: MemberAttributeMacro {
     }
 }
 
-// MARK: - ExtensionMacro
-
 extension DualMacro: ExtensionMacro {
     public static func expansion(
         of node: AttributeSyntax,
@@ -124,10 +112,9 @@ extension DualMacro: ExtensionMacro {
         providingExtensionsOf type: some TypeSyntaxProtocol,
         conformingTo protocols: [TypeSyntax],
         in context: some MacroExpansionContext
-            // Untyped throws forced by external protocol SwiftSyntaxMacros (macro expansion).
-            // swiftlint:disable:next typed_throws_required
+
     ) throws -> [ExtensionDeclSyntax] {
-        // Co-attachment with @Cases is diagnosed by the member role; emit nothing here.
+
         guard !hasAttribute(declaration, named: "Cases") else { return [] }
         guard declaration.is(EnumDeclSyntax.self) else { return [] }
         return [

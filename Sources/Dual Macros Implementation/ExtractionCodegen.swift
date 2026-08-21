@@ -1,10 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-/// Generates a single extraction computed property for an enum case.
-///
-/// All name/label arguments are expected to include backtick escaping from the AST
-/// (via `.text`). Do NOT re-escape them.
 func generateExtractionProperty(
     caseName: String,
     parameters: [(label: String?, type: String)],
@@ -22,8 +18,7 @@ func generateExtractionProperty(
     } else if parameters.count == 1 {
         let param = parameters[0]
         let extractPattern = param.label.map { "\($0): let v" } ?? "let v"
-        // Wrap type in parens before Optional to handle closure types:
-        // `(@Sendable (Int) -> String)?` not `@Sendable (Int) -> String?`
+
         let optionalType = "(\(param.type))?"
 
         return """
@@ -64,7 +59,6 @@ func generateExtractionProperty(
     }
 }
 
-/// Generates the `var case: Case` computed property.
 func generateCaseProperty(
     caseNames: [String],
     isPublic: Bool
@@ -85,9 +79,6 @@ func generateCaseProperty(
         """
 }
 
-/// Generates the Prisms struct containing one prism property per case.
-///
-/// All name/label arguments are expected to include backtick escaping from the AST.
 func generatePrismsStruct(
     cases: [(name: String, parameters: [(label: String?, type: String)])],
     rootTypeName: String,
@@ -114,7 +105,6 @@ func generatePrismsStruct(
         """
 }
 
-/// Generates: static var prisms, is(_:), subscript[prism:], modify(_:_:)
 func generatePrismAccessors(
     rootTypeName: String,
     isPublic: Bool

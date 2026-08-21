@@ -8,8 +8,6 @@ struct EnumDualTests {
     @Suite
     struct `Unit` {
 
-        // MARK: - Route
-
         @Test func `route match dispatches`() {
             let describe = Route.Dual<String>(
                 home: { "Home" },
@@ -62,8 +60,6 @@ struct EnumDualTests {
             #expect(r.profile == 99)
         }
 
-        // MARK: - Action (multi-param)
-
         @Test func `action transform extraction`() {
             let t = Action.transform(input: 1, scale: 2.0).transform
             #expect(t?.input == 1)
@@ -84,8 +80,6 @@ struct EnumDualTests {
 
     @Suite
     struct `Edge Cases` {
-
-        // MARK: - KeywordCases
 
         @Test func `keyword cases compile and match`() {
             let handler = KeywordCases.Dual<String>(

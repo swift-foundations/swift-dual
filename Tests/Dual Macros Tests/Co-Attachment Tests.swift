@@ -1,10 +1,3 @@
-// Co-Attachment Tests.swift
-// swift-dual
-//
-// Negative fixture for the documented @Cases / @Dual co-attachment prohibition:
-// attaching both macros to one declaration must diagnose on each attribute and
-// expand to nothing.
-
 import SwiftDiagnostics
 import SwiftSyntax
 import SwiftSyntaxMacroExpansion
@@ -14,19 +7,11 @@ import Testing
 
 @testable import Dual_Macros_Implementation
 
-// MARK: - Macro registry
-
 private let testMacros: [String: MacroSpec] = [
     "Cases": MacroSpec(type: CasesMacro.self),
     "Dual": MacroSpec(type: DualMacro.self),
 ]
 
-// MARK: - Swift Testing adapter
-
-/// Bridges `SwiftSyntaxMacrosGenericTestSupport.assertMacroExpansion`'s
-/// framework-agnostic `failureHandler` callback to Swift Testing's
-/// `Issue.record(...)`. Avoids `SwiftSyntaxMacrosTestSupport`, which
-/// pulls XCTest (and transitively Foundation).
 private func expectMacroExpansion(
     _ originalSource: String,
     expandedSource: String,
@@ -59,16 +44,12 @@ private func expectMacroExpansion(
     )
 }
 
-// MARK: - Suite hierarchy
-
 extension CasesMacro {
     @Suite
     struct Test {
         @Suite struct `Edge Case` {}
     }
 }
-
-// MARK: - Negative co-attachment fixture
 
 extension CasesMacro.Test.`Edge Case` {
 

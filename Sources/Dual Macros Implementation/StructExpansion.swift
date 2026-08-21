@@ -3,10 +3,8 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-// MARK: - Property Extraction
-
 struct Property {
-    /// The identifier text as it appears in source, including backtick escaping.
+
     let name: String
     let type: String
     let isVar: Bool
@@ -30,7 +28,6 @@ func extractProperties(from structDecl: StructDeclSyntax) -> [Property] {
                 binding.accessorBlock == nil
             else { return nil }
 
-            // .text preserves backtick escaping — use directly, do NOT re-escape.
             return Property(
                 name: identifier.identifier.text,
                 type: typeAnnotation.type.trimmedDescription,
@@ -39,8 +36,6 @@ func extractProperties(from structDecl: StructDeclSyntax) -> [Property] {
         }
     }
 }
-
-// MARK: - Struct → Dual Enum Expansion
 
 func expand(
     _ structDecl: StructDeclSyntax,
@@ -56,27 +51,21 @@ func expand(
 
     var result: [DeclSyntax] = []
 
-    // 1. Build the Dual enum
     var body: [String] = []
 
-    // Case declarations
     for prop in properties {
         body.append("case \(prop.name)(\(prop.type))")
     }
 
-    // Extraction properties — wrap type in parens for closure types:
-    // `(@Sendable (Int) -> String)?` not `@Sendable (Int) -> String?`
     for prop in properties {
         body.append(
             "\(inline)\(access)var \(prop.name): (\(prop.type))? { if case .\(prop.name)(let v) = self { v } else { nil } }"
         )
     }
 
-    // Case discriminant
     let caseNames = properties.map(\.name)
     body.append(generateCaseDiscriminant(caseNames: caseNames, isPublic: isPublic))
 
-    // var case: Case
     let caseCases = properties.map { "case .\($0.name): .\($0.name)" }
         .joined(separator: "\n            ")
 
@@ -90,7 +79,6 @@ func expand(
         """
     )
 
-    // Prisms struct
     let prisms = properties.map { prop in
         generatePrism(
             for: PrismCase(
@@ -111,7 +99,6 @@ func expand(
         """
     )
 
-    // static var prisms, is(_:), subscript[prism:], modify(_:_:)
     body.append("\(inline)\(access)static var prisms: Prisms { Prisms() }")
 
     body.append(
@@ -130,10 +117,6 @@ func expand(
         """
     )
 
-    // An empty struct yields a zero-case (uninhabited) Dual and an empty `Prisms`,
-    // so no `KeyPath<Prisms, Prism<Dual, Value>>` can be formed and `modify` is
-    // uninvokable. Emit an empty body to avoid an unreachable `self = prism.embed(value)`
-    // ("will never be executed", since `embed` would produce a value of the uninhabited Dual).
     if properties.isEmpty {
         body.append(
             """
@@ -165,7 +148,6 @@ func expand(
         """
     result.append(dualEnum)
 
-    // 2. Homogeneous subscript on the source struct
     let uniqueTypes = Set(properties.map(\.type))
     if uniqueTypes.count == 1, let sharedType = properties.first?.type {
         let getCases = properties.map { "case .\($0.name): self.\($0.name)" }

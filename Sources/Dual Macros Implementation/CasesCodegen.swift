@@ -1,13 +1,5 @@
 import SwiftSyntax
 
-// MARK: - @Cases per-case codegen
-//
-// Reuses the `Case` model + `extractCases` / `isPublicDecl` from EnumExpansion.swift /
-// Utilities.swift. Every generated reference to the runtime value type is emitted
-// FULLY-QUALIFIED as `Case_Paths.Case.Path` — inside a @Dual enum's scope the
-// generated nested `Case` discriminant shadows the top-level `Case` namespace.
-
-/// The `Value` type carried by a case's `Case.Path<Root, Value>`.
 func casesValueType(_ c: Case) -> String {
     if c.parameters.isEmpty { return "Void" }
     if c.parameters.count == 1 { return c.parameters[0].type }
@@ -17,7 +9,6 @@ func casesValueType(_ c: Case) -> String {
     return "(\(tuple))"
 }
 
-/// `embed: (Value) -> Root` closure source for a case.
 func casesEmbedClosure(_ c: Case) -> String {
     if c.parameters.isEmpty { return "{ _ in .\(c.name) }" }
     if c.parameters.count == 1 {
@@ -30,7 +21,6 @@ func casesEmbedClosure(_ c: Case) -> String {
     return "{ .\(c.name)(\(args)) }"
 }
 
-/// `extract: (Root) -> Value?` closure source for a case.
 func casesExtractClosure(_ c: Case) -> String {
     if c.parameters.isEmpty {
         return "{ if case .\(c.name) = $0 { return () } else { return nil } }"
@@ -48,9 +38,6 @@ func casesExtractClosure(_ c: Case) -> String {
     return "{ if case .\(c.name)(\(patterns)) = $0 { return (\(tuple)) } else { return nil } }"
 }
 
-/// Members installed inside a `@Cases` enum: the `Cases` witness (one `Case.Path`
-/// property per case), a `static var cases` accessor, and an `is(_:)` predicate keyed
-/// by a `KeyPath<Cases, Case_Paths.Case.Path<Root, Value>>`.
 func generateCasesWitness(
     cases: [Case],
     root: String,

@@ -73,12 +73,7 @@ let package = Package(
             name: "Dual Tests",
             dependencies: [
                 "Dual",
-                // Swift Build links every test target of the package into one
-                // bundle and takes that bundle's link settings from the first
-                // test target, while a `.macro` target propagates none of its
-                // own product dependencies. Without these the bundle fails to
-                // resolve the SwiftSyntax symbols the macro implementation
-                // carries in through `Dual Macros Tests`.
+
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),

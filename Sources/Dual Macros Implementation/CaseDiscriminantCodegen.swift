@@ -1,7 +1,6 @@
 import SwiftSyntax
 import SwiftSyntaxBuilder
 
-/// Generates a `Case` discriminant enum conforming to `Finite.Enumerable`.
 func generateCaseDiscriminant(
     caseNames: [String],
     isPublic: Bool
@@ -11,7 +10,7 @@ func generateCaseDiscriminant(
     let caseCount = caseNames.count
 
     guard !caseNames.isEmpty else {
-        // Empty enum — uninhabited Case type with count 0
+
         return """
                 \(accessModifier)enum Case: Finite_Primitives.Finite.Enumerable, Sendable {
 
