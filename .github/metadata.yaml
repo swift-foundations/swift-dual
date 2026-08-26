@@ -2,7 +2,7 @@
 # Triaged by AI-assisted bulk pass (2026-04-29).
 description: "Macro-generated categorical duals of struct and enum types for Swift."
 topics:
-  - foundations
+  - compositions
   - dual
 homepage: "https://swift-institute.org"
 readme:

@@ -119,7 +119,7 @@ extension DualMacro: ExtensionMacro {
         guard declaration.is(EnumDeclSyntax.self) else { return [] }
         return [
             try ExtensionDeclSyntax(
-                "extension \(type.trimmed): Optic_Primitives.__OpticPrismAccessible {}"
+                "extension \(type.trimmed): Optic.__OpticPrismAccessible {}"
             )
         ]
     }

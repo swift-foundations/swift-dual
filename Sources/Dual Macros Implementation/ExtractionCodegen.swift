@@ -117,19 +117,19 @@ func generatePrismAccessors(
         """
 
     let isMethod: DeclSyntax = """
-        \(raw: inlinableAttr)\(raw: accessModifier)func `is`<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<\(raw: rootTypeName), Value>>) -> Bool {
+        \(raw: inlinableAttr)\(raw: accessModifier)func `is`<Value>(_ keyPath: KeyPath<Prisms, Optic.Optic.Prism<\(raw: rootTypeName), Value>>) -> Bool {
             Self.prisms[keyPath: keyPath].extract(self) != nil
         }
         """
 
     let prismSubscript: DeclSyntax = """
-        \(raw: inlinableAttr)\(raw: accessModifier)subscript<Value>(prism keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<\(raw: rootTypeName), Value>>) -> Value? {
+        \(raw: inlinableAttr)\(raw: accessModifier)subscript<Value>(prism keyPath: KeyPath<Prisms, Optic.Optic.Prism<\(raw: rootTypeName), Value>>) -> Value? {
             Self.prisms[keyPath: keyPath].extract(self)
         }
         """
 
     let modifyMethod: DeclSyntax = """
-        \(raw: inlinableAttr)\(raw: accessModifier)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<\(raw: rootTypeName), Value>>, _ transform: (inout Value) -> Void) {
+        \(raw: inlinableAttr)\(raw: accessModifier)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic.Optic.Prism<\(raw: rootTypeName), Value>>, _ transform: (inout Value) -> Void) {
             let prism = Self.prisms[keyPath: keyPath]
             guard var value = prism.extract(self) else { return }
             transform(&value)

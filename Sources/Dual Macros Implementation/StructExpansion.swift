@@ -103,7 +103,7 @@ func expand(
 
     body.append(
         """
-            \(inline)\(access)func `is`<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>) -> Bool {
+            \(inline)\(access)func `is`<Value>(_ keyPath: KeyPath<Prisms, Optic.Optic.Prism<Dual, Value>>) -> Bool {
                     Self.prisms[keyPath: keyPath].extract(self) != nil
                 }
         """
@@ -111,7 +111,7 @@ func expand(
 
     body.append(
         """
-            \(inline)\(access)subscript<Value>(prism keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>) -> Value? {
+            \(inline)\(access)subscript<Value>(prism keyPath: KeyPath<Prisms, Optic.Optic.Prism<Dual, Value>>) -> Value? {
                     Self.prisms[keyPath: keyPath].extract(self)
                 }
         """
@@ -120,13 +120,13 @@ func expand(
     if properties.isEmpty {
         body.append(
             """
-                \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {}
+                \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {}
             """
         )
     } else {
         body.append(
             """
-                \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic_Primitives.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {
+                \(inline)\(access)mutating func modify<Value>(_ keyPath: KeyPath<Prisms, Optic.Optic.Prism<Dual, Value>>, _ transform: (inout Value) -> Void) {
                         let prism = Self.prisms[keyPath: keyPath]
                         guard var value = prism.extract(self) else { return }
                         transform(&value)
@@ -138,8 +138,8 @@ func expand(
 
     let inheritance =
         sendable
-        ? ": Sendable, Optic_Primitives.__OpticPrismAccessible"
-        : ": Optic_Primitives.__OpticPrismAccessible"
+        ? ": Sendable, Optic.__OpticPrismAccessible"
+        : ": Optic.__OpticPrismAccessible"
 
     let dualEnum: DeclSyntax = """
         \(raw: access)enum Dual\(raw: inheritance) {

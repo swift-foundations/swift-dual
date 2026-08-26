@@ -13,8 +13,8 @@ func generatePrism(for prismCase: PrismCase) -> String {
 
     if prismCase.parameters.isEmpty {
         return """
-            public var \(name): Optic_Primitives.Optic.Prism<\(root), Void> {
-                        Optic_Primitives.Optic.Prism(
+            public var \(name): Optic.Optic.Prism<\(root), Void> {
+                        Optic.Optic.Prism(
                             embed: { _ in .\(name) },
                             extract: { if case .\(name) = $0 { return () } else { return nil } }
                         )
@@ -27,8 +27,8 @@ func generatePrism(for prismCase: PrismCase) -> String {
         let extractPattern = param.label != nil ? "\(param.label!): let v" : "let v"
 
         return """
-            public var \(name): Optic_Primitives.Optic.Prism<\(root), \(paramType)> {
-                        Optic_Primitives.Optic.Prism(
+            public var \(name): Optic.Optic.Prism<\(root), \(paramType)> {
+                        Optic.Optic.Prism(
                             embed: { .\(name)(\(embedArg)) },
                             extract: { if case .\(name)(\(extractPattern)) = $0 { return v } else { return nil } }
                         )
@@ -52,8 +52,8 @@ func generatePrism(for prismCase: PrismCase) -> String {
         }.joined(separator: ", ")
 
         return """
-            public var \(name): Optic_Primitives.Optic.Prism<\(root), (\(tupleTypes))> {
-                        Optic_Primitives.Optic.Prism(
+            public var \(name): Optic.Optic.Prism<\(root), (\(tupleTypes))> {
+                        Optic.Optic.Prism(
                             embed: { .\(name)(\(embedArgs)) },
                             extract: { if case .\(name)(\(extractPatterns)) = $0 { return (\(extractTuple)) } else { return nil } }
                         )

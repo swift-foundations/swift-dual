@@ -25,11 +25,11 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "602.0.0"..<"603.0.0"),
         .package(
-            url: "https://github.com/swift-primitives/swift-optic-primitives.git",
+            url: "https://github.com/swift-molecules/swift-optic.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-finite-primitives.git",
+            url: "https://github.com/swift-molecules/swift-finite.git",
             branch: "main"
         ),
     ],
@@ -48,8 +48,8 @@ let package = Package(
             dependencies: [
                 "Dual Macros Implementation",
                 "Case Paths",
-                .product(name: "Optic Primitives", package: "swift-optic-primitives"),
-                .product(name: "Finite Primitives", package: "swift-finite-primitives"),
+                .product(name: "Optic", package: "swift-optic"),
+                .product(name: "Finite", package: "swift-finite"),
             ]
         ),
         .macro(

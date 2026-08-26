@@ -77,7 +77,7 @@ Add swift-dual to your Package.swift (no tags are published yet; pin to `main`):
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-foundations/swift-dual.git", branch: "main")
+    .package(url: "https://github.com/swift-compositions/swift-dual.git", branch: "main")
 ]
 ```
 
@@ -119,8 +119,8 @@ The macro expansion itself lives in an implementation-only target (`Dual Macros 
 
 ### Dependencies
 
-- [swift-optic-primitives](https://github.com/swift-primitives/swift-optic-primitives) — Prism types backing the generated case accessors; re-exported by `Dual` (pre-release, pin `branch: "main"`).
-- [swift-finite-primitives](https://github.com/swift-primitives/swift-finite-primitives) — Typed `ordinal` / `count` discriminants; re-exported by `Dual` (pre-release, pin `branch: "main"`).
+- [swift-optic](https://github.com/swift-molecules/swift-optic) — Prism types backing the generated case accessors; re-exported by `Dual` (pre-release, pin `branch: "main"`).
+- [swift-finite](https://github.com/swift-molecules/swift-finite) — Typed `ordinal` / `count` discriminants; re-exported by `Dual` (pre-release, pin `branch: "main"`).
 
 ### Third-Party Dependencies
 
